@@ -13,13 +13,13 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Kacper
  */
 
-public class SimulationExecutor {
+public class SimulationsExecutor {
 
     private final LinkedBlockingQueue<Runnable> taskQueue;
     private final List<Runnable> running;
     private final ThreadPoolExecutor pool;
 
-    public SimulationExecutor(LinkedBlockingQueue<Runnable> taskQueue, List<Runnable> running, ThreadPoolExecutor pool) {
+    public SimulationsExecutor(LinkedBlockingQueue<Runnable> taskQueue, List<Runnable> running, ThreadPoolExecutor pool) {
         this.taskQueue = taskQueue;
         this.running = running;
         this.pool = pool;

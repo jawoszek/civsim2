@@ -2,7 +2,7 @@ package com.kawiory.civsim2.spring;
 
 import com.kawiory.civsim2.persistance.DataProvider;
 import com.kawiory.civsim2.persistance.pgsql.PGDataProvider;
-import com.kawiory.civsim2.simulator.SimulationExecutor;
+import com.kawiory.civsim2.simulator.SimulationsExecutor;
 import org.postgresql.ds.PGPoolingDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +24,7 @@ public class ApplicationConfiguration {
 
 
     @Bean
-    public SimulationExecutor simulationExecutor() {
+    public SimulationsExecutor simulationsExecutor() {
         LinkedBlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>(10);
         List<Runnable> running = Collections.synchronizedList(new ArrayList<>());
         ThreadPoolExecutor pool = new ThreadPoolExecutor(2, 5, 1000L, TimeUnit.MILLISECONDS, taskQueue) {
@@ -42,7 +42,7 @@ public class ApplicationConfiguration {
             }
         };
 
-        return new SimulationExecutor(taskQueue, running, pool);
+        return new SimulationsExecutor(taskQueue, running, pool);
     }
 
     @Bean

@@ -2,6 +2,8 @@ package com.kawiory.civsim2.simulator;
 
 import com.google.common.base.Objects;
 
+import java.util.stream.Stream;
+
 /**
  * @author Kacper
  */
@@ -36,5 +38,14 @@ public class Coordinates {
     @Override
     public int hashCode() {
         return Objects.hashCode(x, y);
+    }
+
+    public Stream<Coordinates> getNeighbours(){
+        return Stream.of(
+                new Coordinates(x + 1, y),
+                new Coordinates(x, y + 1),
+                new Coordinates(x - 1, y),
+                new Coordinates(x, y - 1)
+        );
     }
 }

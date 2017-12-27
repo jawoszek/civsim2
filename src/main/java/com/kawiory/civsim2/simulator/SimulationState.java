@@ -66,6 +66,10 @@ public class SimulationState {
         return basins;
     }
 
+    public Terrains getTerrains() {
+        return terrains;
+    }
+
     public int getSizeX() {
         return map.length;
     }
@@ -98,5 +102,13 @@ public class SimulationState {
         Civilization newCivilization = new Civilization(newCivilizationID, name, 0, 0);
         civilizations.add(newCivilization);
         return newCivilization;
+    }
+
+    public int getTerrainFactor(Province province) {
+        return terrains.getTerrainFactor(province.getTerrain(), province.getCivilization().getTechnologyLevel());
+    }
+
+    public int getMaxPopulation(Province province) {
+        return terrains.getMaxPopulation(province.getTerrain(), province.getCivilization().getTechnologyLevel());
     }
 }

@@ -53,4 +53,12 @@ public class Civilization {
     public Set<Coordinates> getOwnedProvinces() {
         return ownedProvinces;
     }
+
+    public int getMaxProvincesCount() {
+        return 100;
+    }
+
+    public int getProvincesCount(){
+        return ownedProvinces.size();
+    }
 }

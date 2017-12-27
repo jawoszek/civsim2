@@ -58,6 +58,7 @@ public class Simulation implements Runnable {
             Coordinates coordinates = new Coordinates(x, y);
             Province province =
                     new Province(
+                            state.getTerrain(x, y),
                             civilization,
                             Math.min(
                                     500,

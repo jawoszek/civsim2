@@ -5,10 +5,13 @@ package com.kawiory.civsim2.simulator;
  */
 public class Province {
 
+    private final int terrain;
+
     private Civilization civilization;
     private int population;
 
-    public Province(Civilization civilization, int population) {
+    public Province(int terrain, Civilization civilization, int population) {
+        this.terrain = terrain;
         this.civilization = civilization;
         this.population = population;
     }
@@ -27,5 +30,9 @@ public class Province {
 
     public void setPopulation(int population) {
         this.population = population;
+    }
+
+    public int getTerrain() {
+        return terrain;
     }
 }
