@@ -8,16 +8,16 @@ public class WorldPreview {
 
     private final String name;
     private final int id;
-    private final int simulationsCount;
-    private final int sizeX;
-    private final int sizeY;
+    private final int usingSimsCount;
+    private final int X;
+    private final int Y;
 
-    public WorldPreview(int id, String name, int simulationsCount, int sizeX, int sizeY) {
+    public WorldPreview(int id, String name, int usingSimsCount, int X, int Y) {
         this.name = name;
         this.id = id;
-        this.simulationsCount = simulationsCount;
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
+        this.usingSimsCount = usingSimsCount;
+        this.X = X;
+        this.Y = Y;
     }
 
     public String getName() {
@@ -28,16 +28,16 @@ public class WorldPreview {
         return id;
     }
 
-    public int getSizeX() {
-        return sizeX;
+    public int getX() {
+        return X;
     }
 
-    public int getSizeY() {
-        return sizeY;
+    public int getY() {
+        return Y;
     }
 
-    public int getSimulationsCount() {
-        return simulationsCount;
+    public int getUsingSimsCount() {
+        return usingSimsCount;
     }
 
 }

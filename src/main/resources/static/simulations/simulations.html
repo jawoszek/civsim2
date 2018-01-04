@@ -1,0 +1,268 @@
+<div ng-controller="SimulationsController">
+
+    <div class="navbar-fixed">
+        <button class="waves-effect waves-light btn" ng-click="openSimCreateModal()">Create simulation</button>
+    </div>
+
+    <h2>Finished</h2>
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Map</th>
+                <th>Frames</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="sim in done">
+                <td>{{sim.id}}</td>
+                <td>{{sim.name}}</td>
+                <td>{{sim.mapName}}</td>
+                <td>{{sim.frameCount}}</td>
+                <td>
+                    <button class="waves-effect waves-light btn" ng-click="openSimModal(sim.id)">Details</button>
+                    <button class="waves-effect waves-light btn" ng-click="deleteSimulation(sim.id)">Remove</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>In progress</h2>
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Map</th>
+                <th>Frames</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="sim in inProgress">
+                <td>{{sim.id}}</td>
+                <td>{{sim.name}}</td>
+                <td>{{sim.mapName}}</td>
+                <td>{{sim.currentFrame}} / {{sim.frameCount}}</td>
+                <td>
+                    <button class="waves-effect waves-light btn" ng-click="openSimModal(sim.id)">Details</button>
+                    <button class="waves-effect waves-light btn" ng-click="deleteSimulation(sim.id)">Remove</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="position:relative">
+        <h2>Queued</h2>
+        <div class="navbar-fixed" style="position:absolute;right:0;top:0">
+            <button class="waves-effect waves-light btn" ng-click="clearQueue()">Clear queue</button>
+        </div>
+    </div>
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Map</th>
+                <th>Frames</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="sim in waiting">
+                <td>{{sim.id}}</td>
+                <td>{{sim.name}}</td>
+                <td>{{sim.mapName}}</td>
+                <td>{{sim.currentFrame}} / {{sim.frameCount}}</td>
+                <td>
+                    <button class="waves-effect waves-light btn" ng-click="openSimModal(sim.id)">Details</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="simModal" class="modal bottom-sheet" style="max-height: 100%; height:100%">
+        <div class="modal-content" style="padding:0">
+
+
+            <div id="canvasDiv" class="map sim-map" ng-class="{'progress-map': !opened.completed}">
+                <canvas id="mapCanvas" style="z-index: 0; position:absolute">Your browser does not support canvas.
+                </canvas>
+                <canvas id="simCanvas" style="z-index: 1; position:absolute" ng-mousemove="mouseMove($event)"
+                        ng-mouseleave="mouseLeave($event)">Your browser does not support canvas.
+                </canvas>
+            </div>
+
+            <div class="civ-desc sim-map" ng-class="{'progress-map': !opened.completed}">
+                <div style="position:fixed; top:2rem; right:2rem">
+                    <a href="#!/simulations" class="modal-action modal-close" style="font-size:1rem">✖</a>
+                </div>
+
+
+                <p style="font-size: 1.2rem"><strong>{{currentFrame.time}}</strong></p>
+                <p>There are {{currentFrame.civilizations.length}} alive civilizations.</p>
+
+                <div class="single-civ" ng-repeat="civ in currentFrame.civilizations | orderBy: 'size' : true">
+                    <p ng-style="{color:civColor[civColorMap.get(civ.id)]}">{{civ.name}}</p>
+
+                    <span class="civ-params">size: {{civ.size}}</span>
+                </div>
+                <span style="padding-bottom:18rem; color: #fafafa">End of list</span>
+            </div>
+
+            <div class="province-details" ng-model="provinceDetails" ng-show="mouseOverCanvas"
+                 ng-style="{left:detailsX,
+                                 top:detailsY}">
+                    <span class="province-header">
+                        <strong>Field ({{selX}}, {{selY}})</strong>, <i>{{selColor}}</i><br/>
+                        <strong ng-show="fieldOccupier">Occupied by {{fieldOccupier}}</strong>
+                        <i ng-hide="fieldOccupier" style="padding:0 1rem 0 1rem">The land is
+                    uninhabited.</i>
+                    </span>
+                <table ng-show="provinceDetails.properties.length!==0">
+                    <tr ng-repeat="prop in provinceDetails.properties">
+                        <td style="padding:0 1rem 0 1rem">{{prop.name}}</td>
+                        <td style="padding:0 1rem 0 1rem">{{prop.value}}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="description sim-desc" ng-class="{'desc-progress': !opened.completed}">
+                <div style="float:right;font-size:1.5rem">
+                    <!--<span style="margin-right:1rem" ng-click="populationMap()">Population map</span>-->
+                    <span style="margin-right:1rem"
+                          ng-click="politicalMode=!politicalMode;generateMap(opened.map.worldMap,opened.map.x,opened.map.y);goToFrame(currentFrame.frameNumber)">
+                        <span ng-show="!politicalMode">Political</span>
+                        <span ng-show="politicalMode">Mixed</span>
+                    </span>
+                    <span ng-click="setBoxSize(30)">S</span>
+                    <span ng-click="setBoxSize(15)">M</span>
+                    <span ng-click="setBoxSize(7)">L</span>
+                    <span ng-click="setBoxSize(4)">XL</span>
+                    <span ng-click="setBoxSize(2)">XXL</span>
+                    <span ng-click="setBoxSize(1)">XXXL</span>
+                </div>
+                <h4>{{ opened.name }}</h4>
+                <p>Simulation ID: {{ opened.id }} &bull; map: {{ opened.mapName }} (ID: {{ opened.mapID }}) &bull;
+                    dimensions: ({{ opened.map.x }}, {{ opened.map.y }}) &bull; current frame: {{
+                    currentFrame.frameNumber }}
+                </p>
+                <span ng-show="!opened.completed">
+            <div class="div col s8 offset-s2">
+                Rendering progress: {{opened.currentFrame}} of {{opened.frameCount}}
+            <div class="progress">
+                 <div class="determinate" ng-style="{'width': opened.width +'%'}"></div>
+            </div>
+                </div>
+                </span>
+
+                <form action="#">
+                    <p class="range-field">
+                        Use slider to change frames:<br/>
+                        <i class="material-icons iblock" ng-hide="autoPlay" ng-click="startPlay()">play_arrow</i>
+                        <i class="material-icons iblock" ng-show="autoPlay" ng-click="stopPlay()">stop</i>
+                        <input type="range" class="iblock" style="width:95%;right:0"
+                               ng-model="frameSel" ng-change="goToFrame(frameSel)"
+                               min="1" max="{{opened.currentFrame}}"/>
+                    </p>
+                </form>
+
+                <p>Viewing frame {{frameSel}} of {{opened.currentFrame}}.</p>
+                <span ng-show="mouseOverCanvas">Currently selected box: ({{ selX }}, {{ selY }}), color {{ selColor }}</span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div id="createSimModal" class="modal bottom-sheet" style="max-height: 90%; height:100%">
+        <form ng-model="simCreateForm" ng-submit="createSimulation()">
+            <div class="modal-content">
+                <div style="position:fixed; top:2rem; right:2rem">
+                    <a href="#!/simulations" class="modal-action modal-close" style="font-size:1rem">✖</a>
+                </div>
+
+                <div class="row">
+                    <div class="input-field col s4">
+                        <select ng-model="create.mapID" class="browser-default">
+                            <option value="" disabled selected>Choose your world map</option>
+                            <option ng-repeat="world in worlds" ng-value="world.id">{{world.name}}</option>
+                        </select>
+                        <label> </label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input placeholder="Sim1..." ng-model="create.name" type="text">
+                        <label>Name of simulation</label>
+                    </div>
+                    <div class="input-field col s2"
+                         title="When selected, real names are used, and with map world_mode, locations are also preserved.">
+                        <input type="checkbox" id="test5" ng-model="create.historical"/>
+                        <label for="test5">Historical</label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input placeholder="Too high might be bad..." ng-model="create.civCount" type="number"
+                               value="4">
+                        <label>Count of civilizations</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input placeholder="Don't go to infinity..." ng-model="create.maxFrame" type="number"
+                               value="100">
+                        <label>Count of frames</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <a type="submit"
+                   class="waves-effect waves-green btn-flat" ng-click="createSimulation()">Create</a>
+            </div>
+        </form>
+
+    </div>
+
+
+    <script>
+        $(document).ready(function () {
+            // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+            $('.modal').modal();
+            $('select').material_select();
+            Materialize.updateTextFields();
+        });
+
+        var clicked = false, clickY, clickX;
+        $('#canvasDiv').on({
+            'mousemove': function (e) {
+                clicked && updateScrollPos(e);
+            },
+            'mousedown': function (e) {
+                clicked = true;
+                clickY = e.pageY;
+                clickX = e.pageX;
+            },
+            'mouseup': function () {
+                clicked = false;
+                $('html').css('cursor', 'auto');
+            }
+        });
+
+        var updateScrollPos = function (e) {
+            $('html').css('cursor', 'move');
+            $('#simModal').scrollTop($('#simModal').scrollTop() + (clickY - e.pageY) / 6);
+            $('#simModal').scrollLeft($('#simModal').scrollLeft() + (clickX - e.pageX) / 6)
+        }
+    </script>
+</div>
+

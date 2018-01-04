@@ -1,16 +1,17 @@
 package com.kawiory.civsim2.spring.controllers;
 
+import com.kawiory.civsim2.generator.Generation;
+import com.kawiory.civsim2.generator.GeneratorOptions;
+import com.kawiory.civsim2.generator.GeneratorsExecutor;
 import com.kawiory.civsim2.persistance.DataProvider;
 import com.kawiory.civsim2.spring.model.WorldDetails;
 import com.kawiory.civsim2.spring.model.WorldPreview;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * @author Kacper
@@ -20,9 +21,11 @@ import java.util.Map;
 public class WorldsController {
 
     private final DataProvider dataProvider;
+    private final GeneratorsExecutor generatorsExecutor;
 
-    public WorldsController(DataProvider dataProvider) {
+    public WorldsController(DataProvider dataProvider, GeneratorsExecutor generatorsExecutor) {
         this.dataProvider = dataProvider;
+        this.generatorsExecutor = generatorsExecutor;
     }
 
     @RequestMapping(value = "/getWorldsCount", method = RequestMethod.GET)
@@ -55,4 +58,11 @@ public class WorldsController {
         return dataProvider.getColors();
     }
 
+    @RequestMapping(value = "/createWorld", method = RequestMethod.POST)
+    @ResponseBody
+    public boolean createWorld(@RequestBody GeneratorOptions options) throws RejectedExecutionException {
+        System.out.println("Generation options: " + options);
+        Generation generation = new Generation(options, dataProvider);
+        return generatorsExecutor.addWorld(generation);
+    }
 }

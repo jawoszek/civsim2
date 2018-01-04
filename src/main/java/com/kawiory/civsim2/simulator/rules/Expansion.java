@@ -23,19 +23,23 @@ public class Expansion implements Rule {
                 );
     }
 
+    @Override
+    public void deleteCivilization(Civilization civilization) {
+
+    }
+
     private void settleExpansion(SimulationState simulationState, Coordinates targetCoordinates,
                                  Set<Province> sourceProvinces) {
         Map<Civilization, Integer> possibleCivilizations = new HashMap<>();
         sourceProvinces.forEach(
                 province -> possibleCivilizations.merge(
                         province.getCivilization(),
-                        100 * province.getPopulation() / simulationState.getMaxPopulation(province),
+                        Math.max(100 * province.getPopulation() / simulationState.getMaxPopulation(province), 1),
                         Integer::sum
                 )
         );
 
         int sum = possibleCivilizations.values().stream().mapToInt(Integer::intValue).sum();
-
         int result = r.nextInt(sum);
 
         int current = 0;
@@ -52,10 +56,7 @@ public class Expansion implements Rule {
         int terrain = simulationState.getTerrain(targetCoordinates.getX(), targetCoordinates.getY());
         int population = Math.min(simulationState.getTerrains().getMaxPopulation(terrain, civilization.getTechnologyLevel()), 1000);
 
-        Province newProvince = new Province(terrain, civilization, population);
-
-        simulationState.getProvinces().put(targetCoordinates, newProvince);
-        civilization.getOwnedProvinces().add(targetCoordinates);
+        simulationState.assignProvince(targetCoordinates, civilization, population);
     }
 
 
@@ -80,7 +81,7 @@ public class Expansion implements Rule {
     private void iterateOverPossibleProvinces(SimulationState simulationState, Coordinates sourceCoordinates,
                                               Province sourceProvince, Map<Coordinates, Set<Province>> possibilities) {
         sourceCoordinates
-                .getNeighbours()
+                .getNeighbours(simulationState.getSizeX(), simulationState.getSizeY())
                 .forEach(
                         targetCoordinates -> tryToExpand(simulationState, sourceCoordinates, sourceProvince, targetCoordinates, possibilities)
                 );
@@ -104,21 +105,31 @@ public class Expansion implements Rule {
 
         Set<Province> sourceProvinces = possibilities.getOrDefault(targetCoordinates, new HashSet<>());
         sourceProvinces.add(sourceProvince);
+        possibilities.put(targetCoordinates, sourceProvinces);
     }
 
     private boolean isSuccessful(int targetTerrain, Province sourceProvince, SimulationState simulationState) {
-        return r.nextInt(100) < getChance(targetTerrain, sourceProvince, simulationState);
+        return r.nextInt(50000) < getChance(targetTerrain, sourceProvince, simulationState);
     }
 
     private int getChance(int targetTerrain, Province sourceProvince, SimulationState simulationState) {
         Civilization civilization = sourceProvince.getCivilization();
 
-        int sourcePopulationPart = 100 * sourceProvince.getPopulation() / simulationState.getMaxPopulation(sourceProvince);
+        int sourcePopulationPart = 200 * sourceProvince.getPopulation() / simulationState.getMaxPopulation(sourceProvince);
 
-        int civilizationProvincesPart = 100 - (100 * civilization.getOwnedProvinces().size() / civilization.getMaxProvincesCount());
+        int civilizationProvincesPart = 100 * civilization.getOwnedProvinces().size() / civilization.getMaxProvincesCount();
 
         int terrainFactor = simulationState.getTerrains().getTerrainFactor(targetTerrain, civilization.getTechnologyLevel());
 
-        return (sourcePopulationPart + civilizationProvincesPart) * terrainFactor / 100;
+        return (sourcePopulationPart - civilizationProvincesPart) * terrainFactor * getEfficiencyFactor(civilization) / 100;
+    }
+
+    private int getEfficiencyFactor(Civilization civilization) {
+        int administrativeEfficiency = civilization.getEfficiencies().getAdministrativeEfficiency();
+
+        if (administrativeEfficiency < 0) {
+            return 100 / (1 - administrativeEfficiency);
+        }
+        return 100 * (1 + administrativeEfficiency);
     }
 }

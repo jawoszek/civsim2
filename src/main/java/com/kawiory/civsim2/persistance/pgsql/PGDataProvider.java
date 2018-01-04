@@ -86,7 +86,7 @@ public class PGDataProvider implements DataProvider {
                 }
                 ResultSet rS2 = connection.createStatement().executeQuery("SELECT x,y,terrain FROM civsim2.field WHERE worldid = " + rS.getInt(1) + ";");
                 while (rS2.next()) {
-                    tab[rS2.getInt(1)][rS2.getInt(2)] = rS2.getInt(3);
+                    tab[rS2.getInt(1)][rS2.getInt(2)] = rS2.getInt(3) - 1;
                 }
                 rS2.close();
                 rS2 = connection.createStatement().executeQuery("SELECT simid,simulation.name,maxframe,count(frameid) FROM civsim2.simulation JOIN civsim2.frame USING (simid) WHERE worldid=" + rS.getInt(1) + " GROUP BY (simid);");
@@ -126,7 +126,7 @@ public class PGDataProvider implements DataProvider {
                 }
                 ResultSet rS2 = connection.createStatement().executeQuery("SELECT x,y,terrain FROM civsim2.field WHERE worldid = " + id + ";");
                 while (rS2.next()) {
-                    tab[rS2.getInt(1)][rS2.getInt(2)] = rS2.getInt(3);
+                    tab[rS2.getInt(1)][rS2.getInt(2)] = rS2.getInt(3) - 1;
                 }
                 rS2.close();
             }
@@ -153,7 +153,7 @@ public class PGDataProvider implements DataProvider {
             Statement stmt = connection.createStatement();
             ResultSet rS = stmt.executeQuery("SELECT colorid, color FROM civsim2.color;");
             while (rS.next()) {
-                result.put(rS.getInt(1), rS.getString(2));
+                result.put(rS.getInt(1) - 1, rS.getString(2));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -174,7 +174,7 @@ public class PGDataProvider implements DataProvider {
         try {
             connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
-            ResultSet rS = stmt.executeQuery("SELECT simid,civsim2.simulation.name,worldid,civsim2.world.name,maxframe,count(frameid) FROM (civsim2.simulation JOIN civsim2.world USING (worldid)) LEFT OUTER JOIN civsim2.frame USING (simid) GROUP BY (simid);");
+            ResultSet rS = stmt.executeQuery("SELECT simid,civsim2.simulation.name,worldid,civsim2.world.name,maxframe,count(frameid) FROM (civsim2.simulation JOIN civsim2.world USING (worldid)) LEFT OUTER JOIN civsim2.frame USING (simid) GROUP BY (simid, civsim2.world.worldid);");
             while (rS.next()) {
                 int simID = rS.getInt(1);
                 String simName = rS.getString(2);
@@ -208,7 +208,7 @@ public class PGDataProvider implements DataProvider {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
-            PreparedStatement pS = connection.prepareStatement("SELECT civsim2.simulation.simid,civsim2.simulation.name,worldid,civsim2.world.name,maxframe,count(frameid) FROM (civsim2.simulation JOIN civsim2.world USING (worldid)) JOIN civsim2.frame ON (civsim2.simulation.simid=civsim2.frame.simid) WHERE civsim2.simulation.simid=? GROUP BY (civsim2.frame.simid);");
+            PreparedStatement pS = connection.prepareStatement("SELECT civsim2.simulation.simid,civsim2.simulation.name,worldid,civsim2.world.name,maxframe,count(frameid) FROM (civsim2.simulation JOIN civsim2.world USING (worldid)) JOIN civsim2.frame ON (civsim2.simulation.simid=civsim2.frame.simid) WHERE civsim2.simulation.simid=? GROUP BY (frame.simid, civsim2.simulation.simid, civsim2.world.worldid);");
             pS.setInt(1, id);
             ResultSet rS = pS.executeQuery();
             if (rS.next()) {
@@ -368,8 +368,9 @@ public class PGDataProvider implements DataProvider {
             pS.setInt(2, simulation.getMaxFrame());
             pS.setString(3, simulation.getName());
             ResultSet rS = pS.executeQuery();
-            id = rS.getInt(1);
-            simulation.setId(id);
+            if (rS.next()) {
+                id = rS.getInt(1);
+            }
             rS.close();
             pS.close();
             if (!simulation.isNameChosen()) {
@@ -410,7 +411,7 @@ public class PGDataProvider implements DataProvider {
                 tempMap = new HashMap<>();
                 tempMap.put("color", rS.getString(3));
                 tempMap.put("name", rS.getString(2));
-                map.put(rS.getInt(1), tempMap);
+                map.put(rS.getInt(1) - 1, tempMap);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -518,12 +519,14 @@ public class PGDataProvider implements DataProvider {
             pS.setString(1, colorS);
             ResultSet rS = pS.executeQuery();
             if (rS.next()) {
-                color = rS.getInt(1);
+                color = rS.getInt(1) - 1;
             } else {
                 PreparedStatement pS2 = connection.prepareStatement("INSERT INTO civsim2.color (color) VALUES (?) RETURNING colorid;");
                 pS2.setString(1, colorS);
                 ResultSet rS2 = pS2.executeQuery();
-                color = rS2.getInt(1);
+                if (rS2.next()) {
+                    color = rS2.getInt(1) - 1;
+                }
                 rS2.close();
                 pS2.close();
             }
@@ -547,7 +550,7 @@ public class PGDataProvider implements DataProvider {
         try {
             connection = dataSource.getConnection();
             connection.setAutoCommit(false);
-            PreparedStatement pS = connection.prepareStatement("INSERT INTO civsim2.frame (simid,framenumber) VALUES (?,?);");
+            PreparedStatement pS = connection.prepareStatement("INSERT INTO civsim2.frame (simid,framenumber) VALUES (?,?) RETURNING frameid;");
             pS.setInt(1, simid);
             pS.setInt(2, number);
             ResultSet rS = pS.executeQuery();
@@ -606,7 +609,9 @@ public class PGDataProvider implements DataProvider {
             pS.setInt(2, sizeX);
             pS.setInt(3, sizeY);
             ResultSet rS = pS.executeQuery();
-            id = rS.getInt(1);
+            if (rS.next()) {
+                id = rS.getInt(1);
+            }
             rS.close();
             pS.close();
             pS = connection.prepareStatement("INSERT INTO civsim2.field (x,y,worldid,terrain) VALUES (?,?,?,?);");
@@ -616,7 +621,7 @@ public class PGDataProvider implements DataProvider {
                     pS.setInt(1, i);
                     pS.setInt(2, j);
                     pS.setInt(3, id);
-                    pS.setInt(4, type);
+                    pS.setInt(4, type + 1);
                     pS.addBatch();
                 }
             }

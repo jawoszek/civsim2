@@ -1,0 +1,167 @@
+<div ng-controller="WorldsController">
+
+    <div class="navbar-fixed">
+        <button class="waves-effect waves-light btn" ng-click="openWorldCreateModal()">Create world</button>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="world in worlds">
+            <td>{{world.id}}</td>
+            <td>{{world.name}}</td>
+            <td>
+                <button class="waves-effect waves-light btn" ng-click="openWorldModal(world.id)">Details</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div id="worldModal" class="modal bottom-sheet" style="max-height: 100%; height:100%">
+        <div class="modal-content" style="padding:0">
+            <div style="position:fixed; top:2rem; right:2rem">
+                <a href="#!" class="modal-action modal-close" style="font-size:1rem">✖</a>
+            </div>
+
+            <div class="map">
+                <canvas id="mapCanvas" ng-mousemove="mouseMove($event)"
+                        ng-mouseleave="mouseLeave($event)">Your browser does not support canvas.
+                </canvas>
+            </div>
+
+            <div class="province-details" ng-model="worldsDetails" ng-show="mouseOverCanvas"
+                 ng-style="{left:detailsX,
+                                 top:detailsY}">
+                    <span class="province-header">
+                        <strong>Field ({{selX}}, {{selY}})</strong><br/>
+                        <i>{{selColor}}</i>
+                    </span>
+            </div>
+
+            <div class="description">
+                <div style="float:right">
+                    <span ng-click="setBoxSize(30)">S</span>
+                    <span ng-click="setBoxSize(15)">M</span>
+                    <span ng-click="setBoxSize(7)">L</span>
+                    <span ng-click="setBoxSize(4)">XL</span>
+                    <span ng-click="setBoxSize(2)">XXL</span>
+                    <span ng-click="setBoxSize(1)">XXXL</span>
+                </div>
+
+                <h4>{{ opened.name }}</h4>
+                <p style="margin-bottom:0">ID: {{ opened.id }} &bull; dimensions: ({{ opened.x }}, {{ opened.y
+                    }}) &bull;
+                    <span ng-show="opened.usingSimsCount==0">no simulations use this map</span>
+                    <span ng-show="opened.usingSimsCount>0"> {{ opened.usingSimsCount }} simulation(s)</span>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="createWorldModal" class="modal bottom-sheet" style="max-height: 90%; height:100%">
+        <form ng-model="simCreateForm" ng-submit="createWorld()">
+            <div class="modal-content">
+                <div style="position:fixed; top:2rem; right:2rem">
+                    <a href="#!/simulations" class="modal-action modal-close" style="font-size:1rem">✖</a>
+                </div>
+
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input placeholder="Map1..." ng-model="create.name" type="text">
+                        <label>Name of map</label>
+                    </div>
+
+                    <div class="input-field col s3">
+                        <input placeholder="This is NOT just size" ng-model="create.startSizeX" type="number"
+                               value="4">
+                        <label>Start size X (use with caution)</label>
+                    </div>
+
+                    <div class="input-field col s3">
+                        <input placeholder="This is NOT just size" ng-model="create.startSizeY" type="number"
+                               value="4">
+                        <label>Start size Y (use with caution)</label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input placeholder="Growth factor, floating point" ng-model="create.growthFactor" float
+                               value="4">
+                        <label> </label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input placeholder="Water factor, double" ng-model="create.water" float
+                               value="100">
+                        <label> </label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="input-field col s3">
+                        <input placeholder="Don't go above 8." ng-model="create.iterations" type="number" min="4"
+                               max="8"
+                               value="4" ng-change="setIterations()">
+                        <label>Iterations</label>
+                    </div>
+                    <div ng-repeat="factor in create.terrainFactor track by $index" class="input-field col s2">
+                        <input placeholder="Terrain f. #{{$index}}" ng-model="create.terrainFactor[$index]" float
+                               value="100">
+                        <label></label>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+
+            <div class="modal-footer">
+                <p ng-show="countDimension(create.startSizeX,create.growthFactor,create.iterations)>0">Map size: x -
+                    {{countDimension(create.startSizeX,create.growthFactor,create.iterations)}};
+                    y - {{countDimension(create.startSizeY,create.growthFactor,create.iterations)}}</p>
+
+                <a type="submit"
+                   class="waves-effect waves-green btn-flat" ng-click="createWorld()">Create</a>
+            </div>
+        </form>
+
+    </div>
+    <script>
+        $(document).ready(function () {
+            // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+            $('.modal').modal();
+            $('select').material_select();
+            Materialize.updateTextFields();
+        });
+
+        var clicked = false, clickY, clickX;
+        $('#worldModal').on({
+            'mousemove': function (e) {
+                clicked && updateScrollPos(e);
+            },
+            'mousedown': function (e) {
+                clicked = true;
+                clickY = e.pageY;
+                clickX = e.pageX;
+            },
+            'mouseup': function () {
+                clicked = false;
+                $('html').css('cursor', 'auto');
+            }
+        });
+
+        var updateScrollPos = function (e) {
+            $('html').css('cursor', 'move');
+            $('#worldModal').scrollTop($('#worldModal').scrollTop() + (clickY - e.pageY) / 6);
+            $('#worldModal').scrollLeft($('#worldModal').scrollLeft() + (clickX - e.pageX) / 6)
+        }
+    </script>
+</div>

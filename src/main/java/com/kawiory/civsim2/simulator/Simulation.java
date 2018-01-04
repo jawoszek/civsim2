@@ -1,9 +1,14 @@
 package com.kawiory.civsim2.simulator;
 
+import com.google.common.collect.ImmutableList;
 import com.kawiory.civsim2.persistance.DataProvider;
+import com.kawiory.civsim2.simulator.initializators.HistoricalInitializer;
+import com.kawiory.civsim2.simulator.initializators.Initializer;
+import com.kawiory.civsim2.simulator.initializators.RandomInitializer;
 import com.kawiory.civsim2.simulator.naming.NameGenerator;
+import com.kawiory.civsim2.simulator.rules.*;
 
-import java.util.Random;
+import java.util.List;
 
 /**
  * @author Kacper
@@ -11,10 +16,20 @@ import java.util.Random;
 
 public class Simulation implements Runnable {
 
+    private final List<Rule> simulationRules = ImmutableList.of(
+            new InternalAffairs(),
+            new PopulationGrowth(),
+            new Expansion(),
+            new Colonization(),
+            new War(),
+            new Separatism()
+    );
+
     private final DataProvider dataProvider;
     private final Terrains terrains;
     private final int maxFrame;
     private final int mapID;
+    private final boolean historical;
 
     private int id;
     private boolean stopped;
@@ -24,7 +39,7 @@ public class Simulation implements Runnable {
 
     private final SimulationState state;
 
-    public Simulation(int mapID, int maxFrame, String name, int initialCivilizationsCount, DataProvider dataProvider, Terrains terrains, NameGenerator nameGenerator) {
+    public Simulation(int mapID, int maxFrame, String name, int initialCivilizationsCount, DataProvider dataProvider, Terrains terrains, NameGenerator nameGenerator, boolean historical) {
         if (name == null) {
             this.nameChosen = false;
             this.name = "Not yet generated";
@@ -37,41 +52,24 @@ public class Simulation implements Runnable {
         this.initialCivilizationsCount = initialCivilizationsCount;
         this.dataProvider = dataProvider;
         this.terrains = terrains;
-        this.state = new SimulationState(id, dataProvider, nameGenerator, terrains);
+        this.state = new SimulationState(id, dataProvider, nameGenerator, terrains, simulationRules);
+        this.historical = historical;
     }
 
     @Override
     public void run() {
-        id = dataProvider.insertSimulation(this);
+        this.id = dataProvider.insertSimulation(this);
+        state.setSimulationID(id);
+        System.out.println(id);
         state.setMap(dataProvider.getWorldMap(mapID));
         initialCivilizationsCount = Math.min(numberOfHabitable(0), initialCivilizationsCount);
-        Random r = new Random();
-        for (int i = 1; i <= initialCivilizationsCount; i++) {
-            int x;
-            int y;
-            do {
-                x = r.nextInt(state.getSizeX());
-                y = r.nextInt(state.getSizeY());
-            } while (!terrains.isHabitable(state.getTerrain(x, y), 0) || state.isProvinceTaken(x, y));
 
-            Civilization civilization = state.createCivilization();
-            Coordinates coordinates = new Coordinates(x, y);
-            Province province =
-                    new Province(
-                            state.getTerrain(x, y),
-                            civilization,
-                            Math.min(
-                                    500,
-                                    terrains.getMaxPopulation(state.getTerrain(x, y), 0)
-                            )
-                    );
+        Initializer initializer = getInitializer();
+        initializer.initializeCivilizations(initialCivilizationsCount, state);
 
-            state.getProvinces().put(coordinates, province);
-            civilization.getOwnedProvinces().add(coordinates);
-        }
         dataProvider.insertFrame(1, id, state.getProvinces());
         state.setCurrentFrame(2);
-        while (state.getCurrentFrame() < maxFrame && !stopped) {
+        while (state.getCurrentFrame() <= maxFrame && !stopped) {
             nextRound();
             dataProvider.insertFrame(state.getCurrentFrame(), id, state.getProvinces());
             state.setCurrentFrame(state.getCurrentFrame() + 1);
@@ -80,7 +78,7 @@ public class Simulation implements Runnable {
     }
 
     private void nextRound() {
-
+        simulationRules.forEach(rule -> rule.changeState(state));
     }
 
     private int numberOfHabitable(int technologyLevel) {
@@ -144,5 +142,12 @@ public class Simulation implements Runnable {
 
     public int getCurrentFrame() {
         return state.getCurrentFrame();
+    }
+
+    private Initializer getInitializer() {
+        if (historical) {
+            return new HistoricalInitializer(dataProvider.getMapName(mapID));
+        }
+        return new RandomInitializer();
     }
 }

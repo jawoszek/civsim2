@@ -13,7 +13,7 @@ public class SimulationFrame {
     private int frameID;
     private int frameNumber;
     private int maxFrame;
-    private List<CivilizationPreview> civilizationsPreviews;
+    private List<CivilizationPreview> civilizations;
     private List<int[]> provinces;
     private String time;
 
@@ -33,8 +33,8 @@ public class SimulationFrame {
         return maxFrame;
     }
 
-    public List<CivilizationPreview> getCivilizationsPreviews() {
-        return civilizationsPreviews;
+    public List<CivilizationPreview> getCivilizations() {
+        return civilizations;
     }
 
     public List<int[]> getProvinces() {
@@ -54,13 +54,13 @@ public class SimulationFrame {
         this.frameID = frameID;
         this.frameNumber = frameNumber;
         this.maxFrame = maxFrame;
-        this.civilizationsPreviews = new ArrayList<>();
+        this.civilizations = new ArrayList<>();
         this.provinces = new ArrayList<>();
         this.time = ""; //TODO parse time
     }
 
     public void addCivilization(CivilizationPreview civ) {
-        civilizationsPreviews.add(civ);
+        civilizations.add(civ);
     }
 
     public void addProvince(int[] prov) {

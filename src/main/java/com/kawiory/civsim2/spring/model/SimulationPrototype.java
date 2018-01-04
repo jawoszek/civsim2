@@ -36,7 +36,7 @@ public class SimulationPrototype {
 
     public Simulation transform(DataProvider dataProvider, Terrains terrains, NameGenerator nameGenerator) {
         if (maxFrame < 2) maxFrame = 2;
-        return new Simulation(mapID, maxFrame, name, civCount, dataProvider, terrains, nameGenerator);
+        return new Simulation(mapID, maxFrame, name, civCount, dataProvider, terrains, nameGenerator, historical);
     }
 
 

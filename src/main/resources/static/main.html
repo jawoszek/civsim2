@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html lang="en" ng-app="civSim" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html lang="en" ng-app="civSim" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html lang="en" ng-app="civSim" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html lang="en" ng-app="civSim" class="no-js"> <!--<![endif]-->
+<head>
+    <!--Import Google Icon Font-->
+    <link href="res/materialIcons.css" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="res/materialize/css/materialize.min.css" media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="custom.css"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Symulator 3000</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="row">
+    <div class="col s12">
+        <ul>
+            <li class="col s3"><a href="#!/worlds">worlds</a></li>
+            <li class="col s3"><a href="#!/simulations">simulations</a></li>
+        </ul>
+    </div>
+</div>
+
+<!--[if lt IE 7]>
+<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
+    your browser</a> to improve your experience.</p>
+<![endif]-->
+<div ng-view></div>
+
+
+<!-- In production use:
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
+-->
+<script type="text/javascript" src="res/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="res/materialize/js/materialize.min.js"></script>
+
+
+<script src="res/angular.js"></script>
+<script src="res/angular-route.js"></script>
+<script type="text/javascript"
+        src="res/angular-materialize.min.js"></script>
+<script src="app.js"></script>
+<script src="worlds/worlds.js"></script>
+<script src="simulations/simulations.js"></script>
+</body>
+</html>

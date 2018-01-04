@@ -32,4 +32,8 @@ public class Terrains {
     private int getBasicFactor(int terrain) {
         return basicFactor[terrain];
     }
+
+    public int getTerrainDefenseBonus(int terrain) {
+        return 0;
+    }
 }

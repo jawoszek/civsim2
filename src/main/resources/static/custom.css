@@ -1,0 +1,95 @@
+.map {
+    z-index: -1;
+    position: absolute;
+    margin-bottom: 8rem;
+    height: 100%;
+    width: 100%;
+    padding-right: 20%
+
+    /*margin-left:auto;*/
+    /*margin-right:auto;*/
+}
+
+.navbar-fixed > button {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}
+
+.sim-map {
+    margin-bottom: 12rem;
+}
+
+.progress-map {
+    margin-bottom: 15rem;
+}
+
+.description {
+    position: fixed;
+    bottom: 0px;
+    background-color: #fafafa;
+    width: 100%;
+    height: 8rem;
+    padding: 1rem;
+}
+
+.civ-desc {
+    position: fixed;
+    right: 0px;
+    width: 20%;
+    max-height: 100%;
+    background-color: #fafafa;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.single-civ > p {
+    margin-bottom: 0;
+    font-size: 1.2rem;
+}
+
+.civ-params {
+    font-size: 0.8rem;
+    color: #8d878a;
+}
+
+.sim-desc {
+    height: 12rem;
+}
+
+.desc-progress {
+    height: 15rem;
+}
+
+.iblock {
+    display: inline-block;
+}
+
+.province-details {
+    position: absolute;
+    min-width: 8rem;
+    background-color: white;
+    border: 1px black solid;
+    padding: 0.25rem;
+    z-index: 9001;
+}
+
+.province-details > p, table {
+    size: 0.6rem;
+}
+
+.province-header {
+    size: 0.8rem;
+    text-align: center;
+    align-items: center;
+    justify-content: center
+}
+
+#simModal {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

@@ -1,5 +1,6 @@
 package com.kawiory.civsim2.spring;
 
+import com.kawiory.civsim2.generator.GeneratorsExecutor;
 import com.kawiory.civsim2.persistance.DataProvider;
 import com.kawiory.civsim2.persistance.pgsql.PGDataProvider;
 import com.kawiory.civsim2.simulator.SimulationsExecutor;
@@ -52,7 +53,7 @@ public class ApplicationConfiguration {
         source.setServerName("localhost");
         source.setDatabaseName("postgres");
         source.setUser("postgres");
-        source.setPassword("password");
+        source.setPassword("postgres");
         source.setMaxConnections(45);
         return source;
     }
@@ -60,5 +61,10 @@ public class ApplicationConfiguration {
     @Bean
     public DataProvider dataProvider(DataSource dataSource) {
         return new PGDataProvider(dataSource);
+    }
+
+    @Bean
+    public GeneratorsExecutor generatorsExecutor() {
+        return new GeneratorsExecutor();
     }
 }

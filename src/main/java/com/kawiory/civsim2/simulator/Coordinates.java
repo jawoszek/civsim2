@@ -40,12 +40,47 @@ public class Coordinates {
         return Objects.hashCode(x, y);
     }
 
-    public Stream<Coordinates> getNeighbours(){
+    public Stream<Coordinates> getNeighbours(int maxX, int maxY){
         return Stream.of(
                 new Coordinates(x + 1, y),
                 new Coordinates(x, y + 1),
                 new Coordinates(x - 1, y),
                 new Coordinates(x, y - 1)
+        ).filter(
+                coordinates -> isInsideMap(coordinates, maxX, maxY)
         );
+    }
+
+    public Stream<Coordinates> getNeighbours(int maxX, int maxY, int r){
+        if (r < 1 || r > 2) {
+            throw new IllegalArgumentException();
+        }
+
+        if (r == 1) {
+            return getNeighbours(maxX, maxY);
+        }
+
+        return Stream.of(
+                new Coordinates(x + 1, y),
+                new Coordinates(x, y + 1),
+                new Coordinates(x - 1, y),
+                new Coordinates(x, y - 1),
+
+                new Coordinates(x + 2, y),
+                new Coordinates(x, y + 2),
+                new Coordinates(x - 2, y),
+                new Coordinates(x, y - 2),
+
+                new Coordinates(x + 1, y + 1),
+                new Coordinates(x - 1, y + 1),
+                new Coordinates(x - 1, y - 1),
+                new Coordinates(x + 1, y - 1)
+        ).filter(
+                coordinates -> isInsideMap(coordinates, maxX, maxY)
+        );
+    }
+
+    private boolean isInsideMap(Coordinates coordinates, int maxX, int maxY) {
+        return coordinates.getX() < maxX && coordinates.getX() >= 0 && coordinates.getY() < maxY && coordinates.getY() >= 0;
     }
 }

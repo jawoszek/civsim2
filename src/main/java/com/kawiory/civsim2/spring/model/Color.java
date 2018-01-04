@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Color {
 
-    public static final List<Integer> colors = Arrays.asList(65280, 16773146, 8949905, 28672, 9083245,
+    public static final List<Integer> colors = Arrays.asList(983270, 65280, 16773146, 8949905, 28672, 9083245,
             0, 13417984, 4222540, 13417984, 16773836, 13430527,
             java.awt.Color.RED.getRGB() & 0xFFFFFF, java.awt.Color.BLUE.getRGB() & 0xFFFFFF,
             java.awt.Color.CYAN.getRGB() & 0xFFFFFF, java.awt.Color.BLACK.getRGB() & 0xFFFFFF,
@@ -21,14 +21,14 @@ public class Color {
         int redC = (color >> 16) & 0xFF;
         int greenC = (color >> 8) & 0xFF;
         int blueC = (color) & 0xFF;
-        for (int i = 0; i <= 10; i++) {
+        for (int i = 1; i <= 11; i++) {
             int redI = (colors.get(i) >> 16) & 0xFF;
             int greenI = (colors.get(i) >> 8) & 0xFF;
             int blueI = (colors.get(i)) & 0xFF;
             int curr = (int) Math.round(Math.sqrt(Math.pow(redC - redI, 2) + Math.pow(greenC - greenI, 2) + Math.pow(blueC - blueI, 2)));
             if (curr < currDist) {
                 currDist = curr;
-                id = i + 1;
+                id = i;
             }
         }
         return id;
@@ -50,8 +50,8 @@ public class Color {
         return id;
     }
 
-    public static final List<String> terrains = Arrays.asList("Grassland", "Desert", "Mountain", "Forest", "Steppe",
-            "Peak", "Arid land", "Jungle", "Swamp", "Tundra", "Arctic");
+    public static final List<String> terrains = Arrays.asList("Water", "Grassland", "Desert", "Mountain", "Forest",
+            "Steppe", "Peak", "Arid land", "Jungle", "Swamp", "Tundra", "Arctic");
 
     public static String colorToString(int color) {
         return "#" + String.format("%06X", color);

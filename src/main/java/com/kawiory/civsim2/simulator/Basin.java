@@ -13,4 +13,8 @@ public class Basin {
     public Basin() {
         this.colonialStrength = new HashMap<>();
     }
+
+    public Map<Civilization, Integer> getColonialStrength() {
+        return colonialStrength;
+    }
 }
