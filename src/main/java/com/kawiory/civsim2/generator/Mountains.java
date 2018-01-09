@@ -8,7 +8,6 @@ public class Mountains extends Grid{
 
     public Mountains enlarge(int sizeX, int sizeY){
         Mountains result = new Mountains(sizeX,sizeY);
-        //TODO
         return result;
     }
 }

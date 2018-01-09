@@ -1,6 +1,9 @@
 package com.kawiory.civsim2.simulator.rules;
 
-import com.kawiory.civsim2.simulator.*;
+import com.kawiory.civsim2.simulator.Basin;
+import com.kawiory.civsim2.simulator.Civilization;
+import com.kawiory.civsim2.simulator.Coordinates;
+import com.kawiory.civsim2.simulator.SimulationState;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 
@@ -22,7 +25,7 @@ public class Colonization implements Rule {
     }
 
     @Override
-    public void deleteCivilization(Civilization civilization) {
+    public void deleteCivilization(SimulationState simulationState, Civilization civilization) {
 
     }
 
@@ -33,7 +36,7 @@ public class Colonization implements Rule {
                 (coordinates, province) ->
                         coordinates
                                 .getNeighbours(simulationState.getSizeX(), simulationState.getSizeY())
-                                .filter(potentialCoordinates -> simulationState.isWater(coordinates))
+                                .filter(simulationState::isWater)
                                 .forEach(portCoordinates -> {
                                             Set<Civilization> civilizations = playersPort.getOrDefault(portCoordinates, new HashSet<>());
                                             civilizations.add(province.getCivilization());
@@ -62,60 +65,60 @@ public class Colonization implements Rule {
     }
 
     private int getColonialStrengthIncrease(Civilization civilization) {
-        return 1;
+        int technologyLevel = civilization.getTechnologyLevel();
+        int fromTechnology = 0;
+
+        if (technologyLevel > 1600) {
+            fromTechnology += 1;
+        }
+
+        return 1 + fromTechnology;
     }
 
     private int getMaxColonialStrength(Civilization civilization) {
-        return 10;
+        int technologyLevel = civilization.getTechnologyLevel();
+        int fromTechnology = 0;
+
+        if (technologyLevel > 120) {
+            fromTechnology += 5;
+        }
+
+        if (technologyLevel > 600) {
+            fromTechnology += 12;
+        }
+
+        if (technologyLevel > 1600) {
+            fromTechnology += 40;
+        }
+
+        if (technologyLevel > 2000) {
+            fromTechnology += 60;
+        }
+
+        return 3 + fromTechnology;
     }
 
     private void propagateColonialStrength(SimulationState simulationState) {
         Map<Coordinates, Basin> basins = simulationState.getBasins();
         Map<Coordinates, Basin> newBasins = new HashMap<>();
-        Map<Civilization, List<Tuple2>> civilizationsStrength = new HashMap<>();
 
         basins.forEach(
                 (coordinates, basin) -> {
                     basin.getColonialStrength().forEach(
                             (civilization, strength) -> {
-                                List<Tuple2> basinsStrengths = civilizationsStrength.getOrDefault(civilization, new ArrayList<>());
-                                basinsStrengths.add(Tuple.of(coordinates, strength));
-                                civilizationsStrength.put(civilization, basinsStrengths);
+                                coordinates
+                                        .getNeighbours(simulationState.getSizeX(), simulationState.getSizeY())
+                                        .filter(simulationState::isWater)
+                                        .forEach(
+                                                neighbourCoordinates -> {
+                                                    Basin newBasin = newBasins.getOrDefault(neighbourCoordinates, new Basin());
+                                                    int newValue = Math.max(strength, newBasin.getColonialStrength().getOrDefault(civilization, 0));
+                                                    newBasin.getColonialStrength().put(civilization, newValue);
+                                                    newBasins.put(neighbourCoordinates, newBasin);
+                                                }
+                                        );
                             }
                     );
-                }
-        );
-
-        civilizationsStrength.forEach(
-                (civilization, basinsStrengths) -> {
-                    Set<Coordinates> alreadyPropagatedFrom = new HashSet<>();
-                    while (!basinsStrengths.isEmpty()) {
-                        basinsStrengths.sort(Comparator.comparingInt(tuple2 -> (Integer) tuple2._2));
-                        Tuple2 strongestBasin = basinsStrengths.remove(basinsStrengths.size() - 1);
-
-                        Coordinates coordinates = (Coordinates) strongestBasin._1;
-                        int strength = (int) strongestBasin._2;
-                        alreadyPropagatedFrom.add(coordinates);
-
-                        Basin basin = newBasins.getOrDefault(coordinates, new Basin());
-                        basin.getColonialStrength().merge(civilization, strength, Math::max);
-                        newBasins.put(coordinates, basin);
-
-                        if (strength > 1) {
-                            coordinates
-                                    .getNeighbours(simulationState.getSizeX(), simulationState.getSizeY())
-                                    .filter(simulationState::isWater)
-                                    .filter(
-                                            targetCoordinates ->
-                                                    !alreadyPropagatedFrom.contains(targetCoordinates)
-                                    )
-                                    .forEach(
-                                            targetCoordinates ->
-                                                    basinsStrengths.add(Tuple.of(targetCoordinates, strength - 1))
-                                    );
-                        }
-                    }
-
                 }
         );
 
@@ -175,21 +178,41 @@ public class Colonization implements Rule {
     }
 
     private boolean colonizeProvince(SimulationState simulationState, Civilization civilization, Coordinates coordinates, int colonialStrength) {
-        int terrainFactor = simulationState.getTerrains().getTerrainFactor(simulationState.getTerrain(coordinates), civilization.getTechnologyLevel());
+        int terrain = simulationState.getTerrain(coordinates);
+        int technologyLevel = civilization.getTechnologyLevel();
+        int terrainFactor = simulationState.getTerrains().getTerrainFactor(terrain, technologyLevel);
 
-        int chance = (terrainFactor + (colonialStrength / 10)) * (5 + 2 * civilization.getEfficiencies().getAdministrativeEfficiency());
-        int result = random.nextInt(100000);
+        int chance = (terrainFactor + colonialStrength) * (5 + 2 * civilization.getEfficiencies().getAdministrativeEfficiency());
+        int result = random.nextInt(500000);
 
         if (result >= chance) {
             return false;
         }
 
-        simulationState.assignProvince(coordinates, civilization, 500);
+        int population = 500 * colonialStrength / getMaxColonialStrength(civilization);
+        int populationFinal = Math.min(simulationState.getTerrains().getMaxPopulation(terrain, technologyLevel), population);
+
+        if (populationFinal < 1) {
+            return false;
+        }
+
+        simulationState.assignProvince(coordinates, civilization, populationFinal);
         return true;
     }
 
     private int getMaxColoniesPerFrame(Civilization civilization) {
-        return 1;
+        int technologyLevel = civilization.getTechnologyLevel();
+        int fromTechnology = 0;
+
+        if (technologyLevel > 600) {
+            fromTechnology += 1;
+        }
+
+        if (technologyLevel > 1600) {
+            fromTechnology += 1;
+        }
+
+        return 1 + fromTechnology;
     }
 
     private Map<Coordinates, Map<Civilization, Integer>> getPossibleColonies(SimulationState simulationState) {

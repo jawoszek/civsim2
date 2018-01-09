@@ -80,7 +80,7 @@ public class SimulationsController {
     @ResponseBody
     public boolean createSimulation(@RequestBody SimulationPrototype simulation) throws RejectedExecutionException {
         System.out.println(simulation.toString());
-        Simulation transformed = simulation.transform(dataProvider, new Terrains(), new RandomNameGenerator());
+        Simulation transformed = simulation.transform(dataProvider, new Terrains());
         return simulationsExecutor.addSimulation(transformed);
     }
 

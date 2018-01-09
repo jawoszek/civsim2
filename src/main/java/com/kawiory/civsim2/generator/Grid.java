@@ -30,7 +30,6 @@ public class Grid {
 
     public Integer[] getNeighbors(int x, int y) {
         Integer[] neighbors = new Integer[8];
-        //TODO
         return neighbors;
     }
 

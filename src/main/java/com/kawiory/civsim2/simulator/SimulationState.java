@@ -182,7 +182,7 @@ public class SimulationState {
 
     private void removeCivilization(Civilization civilization) {
         civilizations.remove(civilization);
-        rules.forEach(rule -> rule.deleteCivilization(civilization));
+        rules.forEach(rule -> rule.deleteCivilization(this, civilization));
     }
 
     public Province removeProvince(Coordinates coordinates) {

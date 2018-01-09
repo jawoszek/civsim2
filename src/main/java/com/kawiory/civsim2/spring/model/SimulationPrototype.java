@@ -4,7 +4,9 @@ import com.google.common.base.MoreObjects;
 import com.kawiory.civsim2.persistance.DataProvider;
 import com.kawiory.civsim2.simulator.Simulation;
 import com.kawiory.civsim2.simulator.Terrains;
+import com.kawiory.civsim2.simulator.naming.HistoricalNameGenerator;
 import com.kawiory.civsim2.simulator.naming.NameGenerator;
+import com.kawiory.civsim2.simulator.naming.RandomNameGenerator;
 
 /**
  * @author Kacper
@@ -34,9 +36,18 @@ public class SimulationPrototype {
         this.historical = historical;
     }
 
-    public Simulation transform(DataProvider dataProvider, Terrains terrains, NameGenerator nameGenerator) {
+    public Simulation transform(DataProvider dataProvider, Terrains terrains) {
         if (maxFrame < 2) maxFrame = 2;
-        return new Simulation(mapID, maxFrame, name, civCount, dataProvider, terrains, nameGenerator, historical);
+        return new Simulation(
+                mapID,
+                maxFrame,
+                name,
+                civCount,
+                dataProvider,
+                terrains,
+                historical ? new HistoricalNameGenerator() : new RandomNameGenerator(),
+                historical
+        );
     }
 
 

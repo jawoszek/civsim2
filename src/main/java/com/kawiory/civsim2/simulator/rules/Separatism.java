@@ -26,7 +26,7 @@ public class Separatism implements Rule {
     }
 
     @Override
-    public void deleteCivilization(Civilization civilization) {
+    public void deleteCivilization(SimulationState simulationState, Civilization civilization) {
 
     }
 
@@ -40,7 +40,9 @@ public class Separatism implements Rule {
             return;
         }
 
-        int chance = getBasicChance(civilization) * 100 * size / maxSize;
+        int governmentFactor = civilization.getGovernmentID() == -1 ? 90 : 100;
+
+        int chance = getBasicChance(civilization) * 100 * size / maxSize * governmentFactor / 100;
 
         if (size > maxSize) {
             chance = chance * size / maxSize;
@@ -54,7 +56,17 @@ public class Separatism implements Rule {
     }
 
     private int getSeparatismSizeThreshold(int technologyLevel) {
-        return 20;
+        int technologyBonus = 0;
+
+        if (technologyLevel > 800) {
+            technologyBonus += 10;
+        }
+
+        if (technologyLevel > 1800) {
+            technologyBonus += 10;
+        }
+
+        return 20 + technologyBonus;
     }
 
     private int getBasicChance(Civilization civilization) {

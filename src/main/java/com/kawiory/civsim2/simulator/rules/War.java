@@ -7,6 +7,7 @@ import io.vavr.Tuple2;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Kacper
@@ -23,7 +24,7 @@ public class War implements Rule {
     }
 
     @Override
-    public void deleteCivilization(Civilization civilization) {
+    public void deleteCivilization(SimulationState simulationState, Civilization civilization) {
 
     }
 
@@ -41,7 +42,7 @@ public class War implements Rule {
     }
 
     private boolean rollForTruce(Integer relationsBeforeWar) {
-        return random.nextInt(10000) < 10 * relationsBeforeWar / 100;
+        return random.nextInt(20000) < 10 * (10000 + relationsBeforeWar) / 100;
     }
 
     private void truce(SimulationState simulationState, Set<Civilization> pair) {
@@ -64,8 +65,22 @@ public class War implements Rule {
             Coordinates currentCoordinates = currentTuple._1;
             Province currentProvince = simulationState.getProvince(currentCoordinates);
 
-            Civilization stronger = currentTuple._2.entrySet().stream().filter(entry -> pair.contains(entry.getKey())).sorted(Comparator.comparingLong(map -> -map.getValue())).map(Map.Entry::getKey).findFirst().orElseThrow(IllegalStateException::new);
-            Civilization weaker = currentTuple._2.entrySet().stream().filter(entry -> pair.contains(entry.getKey())).sorted(Comparator.comparingLong(Map.Entry::getValue)).map(Map.Entry::getKey).findFirst().orElseThrow(IllegalStateException::new);
+            Civilization stronger = currentTuple._2
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> pair.contains(entry.getKey()))
+                    .sorted(Comparator.comparingLong(map -> -map.getValue()))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElseThrow(IllegalStateException::new);
+            Civilization weaker = currentTuple._2
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> pair.contains(entry.getKey()))
+                    .sorted(Comparator.comparingLong(Map.Entry::getValue))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElseThrow(IllegalStateException::new);
 
             long difference = currentTuple._2.get(stronger) - currentTuple._2.get(weaker);
 
@@ -97,14 +112,22 @@ public class War implements Rule {
                 .map(coordinates -> Tuple.of(coordinates, countCivilizationsInVicinity(simulationState, coordinates)))
                 .sorted(
                         Comparator.comparingLong(
-                                tuple -> pair.stream().mapToLong(civilization -> tuple._2.getOrDefault(civilization, 0L)).max().orElse(0) - pair.stream().mapToLong(civilization -> tuple._2.getOrDefault(civilization, 0L)).min().orElse(0)
+                                tuple -> pair
+                                        .stream()
+                                        .mapToLong(civilization -> tuple._2.getOrDefault(civilization, 0L))
+                                        .max().orElse(0)
+                                        - pair
+                                        .stream()
+                                        .mapToLong(civilization -> tuple._2.getOrDefault(civilization, 0L))
+                                        .min().orElse(0)
                         ))
                 .collect(Collectors.toList());
     }
 
     private Map<Civilization, Long> countCivilizationsInVicinity(SimulationState simulationState, Coordinates coordinates) {
-        return coordinates
-                .getNeighbours(simulationState.getSizeX(), simulationState.getSizeY(), 2)
+        return Stream.concat(
+                coordinates.getNeighbours(simulationState.getSizeX(), simulationState.getSizeY(), 2),
+                Stream.of(coordinates))
                 .filter(simulationState::isProvinceTaken)
                 .map(simulationState::getProvince)
                 .map(Province::getCivilization)
@@ -130,9 +153,9 @@ public class War implements Rule {
     }
 
     private boolean rollForWar(SimulationState simulationState, Set<Civilization> pair) {
-        int chanceForWar = 1000 * getRelationsFactor(simulationState, pair) / 1000000;
+        int chanceForWar = 100 - Math.min(getRelationsFactor(simulationState, pair) / 100, 95);
 
-        return random.nextInt(100) < chanceForWar;
+        return random.nextInt(3000) < chanceForWar;
     }
 
     private int getRelationsFactor(SimulationState simulationState, Set<Civilization> pair) {
@@ -194,7 +217,7 @@ public class War implements Rule {
                     Civilization defender = occupiedProvince.getCivilization();
                     Civilization occupant = pair.stream().filter(civilization -> !civilization.equals(defender)).findAny().orElse(null);
 
-                    occupiedProvince.setPopulation(Math.max(occupiedProvince.getPopulation() * 90 / 100, 100));
+                    occupiedProvince.setPopulation(Math.max(occupiedProvince.getPopulation() * 95 / 100, 500));
                     simulationState.assignProvince(coordinates, occupant);
                 }
         );
@@ -207,7 +230,7 @@ public class War implements Rule {
                 .filter(simulationState::isProvinceTaken)
                 .map(simulationState::getProvince)
                 .filter(province -> pair.contains(province.getCivilization()))
-                .forEach(province -> province.setPopulation(Math.max(province.getPopulation() * 95 / 100, 100)));
+                .forEach(province -> province.setPopulation(Math.max(province.getPopulation() * 98 / 100, 100)));
     }
 
     private boolean hasEnemyNeighbours(SimulationState simulationState, Coordinates coordinates, Set<Civilization> pair) {

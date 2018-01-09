@@ -5,8 +5,7 @@ import com.kawiory.civsim2.simulator.Coordinates;
 import com.kawiory.civsim2.simulator.Province;
 import com.kawiory.civsim2.simulator.SimulationState;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Kacper
@@ -28,17 +27,45 @@ public class PopulationGrowth implements Rule {
                             int additionalPopulation = growthRatio * currentPopulation / 1000000;
                             int newPopulation = additionalPopulation + currentPopulation;
                             province.setPopulation(newPopulation);
-                            if (isOverpopulated(province, simulationState)){
+                            if (isOverpopulated(province, simulationState)) {
                                 overpopulatedProvinces.add(coordinates);
                             }
                         }
                 );
 
-        // TODO relocate population from overpopulated provinces
+        List<Coordinates> orderedProvinces = new ArrayList<>(overpopulatedProvinces);
+        orderedProvinces.sort(Comparator.comparingInt(coordinates -> {
+            Province province = simulationState.getProvince(coordinates);
+            int maxPopulation = simulationState.getMaxPopulation(province);
+            return -(province.getPopulation() - maxPopulation);
+        }));
+
+        orderedProvinces.forEach(
+                coordinates -> {
+                    Province province = simulationState.getProvince(coordinates);
+                    int maxPopulation = simulationState.getMaxPopulation(province);
+                    int toReallocate = province.getPopulation() - maxPopulation;
+                    coordinates
+                            .getNeighbours(simulationState.getSizeX(), simulationState.getSizeY())
+                            .filter(neighbourCoordinates -> !overpopulatedProvinces.contains(neighbourCoordinates))
+                            .filter(simulationState::isProvinceTaken)
+                            .map(simulationState::getProvince)
+                            .filter(neighbourProvince -> neighbourProvince.getCivilization().equals(province.getCivilization()))
+                            .forEach(
+                                    neighbourProvince -> {
+                                        int neighbourPopulation = neighbourProvince.getPopulation();
+                                        int maxNeighbourPopulation = simulationState.getMaxPopulation(neighbourProvince);
+
+                                        neighbourProvince.setPopulation(Math.min(neighbourPopulation + (toReallocate / 4), maxNeighbourPopulation));
+                                    }
+                            );
+                }
+        );
+
     }
 
     @Override
-    public void deleteCivilization(Civilization civilization) {
+    public void deleteCivilization(SimulationState simulationState, Civilization civilization) {
 
     }
 

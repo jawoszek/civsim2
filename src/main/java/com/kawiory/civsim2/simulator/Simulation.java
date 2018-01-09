@@ -17,6 +17,8 @@ import java.util.List;
 public class Simulation implements Runnable {
 
     private final List<Rule> simulationRules = ImmutableList.of(
+            new TechnologicalProgress(),
+            new Relations(),
             new InternalAffairs(),
             new PopulationGrowth(),
             new Expansion(),
@@ -44,6 +46,7 @@ public class Simulation implements Runnable {
             this.nameChosen = false;
             this.name = "Not yet generated";
         } else {
+            this.nameChosen = true;
             this.name = name;
         }
         this.id = 0;
@@ -62,6 +65,7 @@ public class Simulation implements Runnable {
         state.setSimulationID(id);
         System.out.println(id);
         state.setMap(dataProvider.getWorldMap(mapID));
+
         initialCivilizationsCount = Math.min(numberOfHabitable(0), initialCivilizationsCount);
 
         Initializer initializer = getInitializer();

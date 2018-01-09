@@ -56,7 +56,7 @@ public class SimulationFrame {
         this.maxFrame = maxFrame;
         this.civilizations = new ArrayList<>();
         this.provinces = new ArrayList<>();
-        this.time = ""; //TODO parse time
+        this.time = "";
     }
 
     public void addCivilization(CivilizationPreview civ) {

@@ -59,10 +59,37 @@ public class Civilization {
     }
 
     public int getMaxProvincesCount() {
-        return 2000;
+        int fromTechnology = 0;
+        if (technologyLevel > 190) {
+            fromTechnology += 1000;
+        }
+
+        if (technologyLevel > 500) {
+            fromTechnology += 2000;
+        }
+
+        if (technologyLevel > 800) {
+            fromTechnology += 4000;
+        }
+
+        if (technologyLevel > 1400) {
+            fromTechnology += 4000;
+        }
+
+        if (technologyLevel > 1800) {
+            fromTechnology += 8000;
+        }
+
+        int fromGovernment = 0;
+
+        if (governmentID == 1) {
+            fromGovernment += 500;
+        }
+
+        return 1000 + fromTechnology + fromGovernment;
     }
 
-    public int getProvincesCount(){
+    public int getProvincesCount() {
         return ownedProvinces.size();
     }
 

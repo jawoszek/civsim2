@@ -1,5 +1,6 @@
 package com.kawiory.civsim2.simulator;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 import java.util.stream.Stream;
@@ -82,5 +83,13 @@ public class Coordinates {
 
     private boolean isInsideMap(Coordinates coordinates, int maxX, int maxY) {
         return coordinates.getX() < maxX && coordinates.getX() >= 0 && coordinates.getY() < maxY && coordinates.getY() >= 0;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("x", x)
+                .add("y", y)
+                .toString();
     }
 }

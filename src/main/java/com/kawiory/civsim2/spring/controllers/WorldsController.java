@@ -43,7 +43,7 @@ public class WorldsController {
     @RequestMapping(value = "/getWorldThumbnail", method = RequestMethod.GET)
     @ResponseBody
     public String base64Thumbnail(@RequestParam(value = "id") int id) {
-        return "akjcka13"; // TODO
+        return "akjcka13";
     }
 
     @RequestMapping(value = "/viewWorld", method = RequestMethod.GET)

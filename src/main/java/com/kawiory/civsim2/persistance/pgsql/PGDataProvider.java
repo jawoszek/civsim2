@@ -462,7 +462,7 @@ public class PGDataProvider implements DataProvider {
             if (rS.next()) {
                 name = rS.getString(1);
             } else {
-                name = "funny_one"; // TODO not sure what to do (exception?) - upper logic should not allow such abominations...
+                name = "N/A";
             }
             rS.close();
             pS.close();

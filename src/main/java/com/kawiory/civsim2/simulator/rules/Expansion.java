@@ -24,7 +24,7 @@ public class Expansion implements Rule {
     }
 
     @Override
-    public void deleteCivilization(Civilization civilization) {
+    public void deleteCivilization(SimulationState simulationState, Civilization civilization) {
 
     }
 
@@ -82,6 +82,7 @@ public class Expansion implements Rule {
                                               Province sourceProvince, Map<Coordinates, Set<Province>> possibilities) {
         sourceCoordinates
                 .getNeighbours(simulationState.getSizeX(), simulationState.getSizeY())
+                .filter(simulationState::isLand)
                 .forEach(
                         targetCoordinates -> tryToExpand(simulationState, sourceCoordinates, sourceProvince, targetCoordinates, possibilities)
                 );
@@ -109,19 +110,20 @@ public class Expansion implements Rule {
     }
 
     private boolean isSuccessful(int targetTerrain, Province sourceProvince, SimulationState simulationState) {
-        return r.nextInt(50000) < getChance(targetTerrain, sourceProvince, simulationState);
+        return r.nextInt(40000) < getChance(targetTerrain, sourceProvince, simulationState);
     }
 
     private int getChance(int targetTerrain, Province sourceProvince, SimulationState simulationState) {
         Civilization civilization = sourceProvince.getCivilization();
+        int governmentFactor = civilization.getGovernmentID() == 0 ? 105 : 100;
 
-        int sourcePopulationPart = 200 * sourceProvince.getPopulation() / simulationState.getMaxPopulation(sourceProvince);
+        int sourcePopulationPart = 1000 * sourceProvince.getPopulation() / simulationState.getMaxPopulation(sourceProvince);
 
         int civilizationProvincesPart = 100 * civilization.getOwnedProvinces().size() / civilization.getMaxProvincesCount();
 
         int terrainFactor = simulationState.getTerrains().getTerrainFactor(targetTerrain, civilization.getTechnologyLevel());
 
-        return (sourcePopulationPart - civilizationProvincesPart) * terrainFactor * getEfficiencyFactor(civilization) / 100;
+        return (sourcePopulationPart - civilizationProvincesPart) * terrainFactor * getEfficiencyFactor(civilization) * governmentFactor / 10000;
     }
 
     private int getEfficiencyFactor(Civilization civilization) {
@@ -130,6 +132,6 @@ public class Expansion implements Rule {
         if (administrativeEfficiency < 0) {
             return 100 / (1 - administrativeEfficiency);
         }
-        return 100 * (1 + administrativeEfficiency);
+        return 100 * (1 + 2 * administrativeEfficiency);
     }
 }

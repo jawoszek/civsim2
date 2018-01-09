@@ -21,7 +21,7 @@ public class InternalAffairs implements Rule {
     }
 
     @Override
-    public void deleteCivilization(Civilization civilization) {
+    public void deleteCivilization(SimulationState simulationState, Civilization civilization) {
 
     }
 

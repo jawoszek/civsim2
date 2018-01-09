@@ -26,19 +26,28 @@ public enum HistoricalMaps {
         Map<String, Tuple2<Coordinates, Integer>> map = new HashMap<>();
         switch (this) {
             case WHOLE_MODE:
-                map.put("Roman Empire", Tuple.of(new Coordinates(651, 243), 0));
+                map.put("Roman Empire", Tuple.of(new Coordinates(651, 243), 1));
                 map.put("Egypt", Tuple.of(new Coordinates(711, 298), -1));
                 map.put("Greece", Tuple.of(new Coordinates(684, 260), 1));
                 map.put("Ottoman Empire", Tuple.of(new Coordinates(701, 255), 0));
                 map.put("Incas Empire", Tuple.of(new Coordinates(330, 438), -1));
                 map.put("Babylon", Tuple.of(new Coordinates(768, 288), -1));
-                map.put("China", Tuple.of(new Coordinates(1021, 297), -1));
-                map.put("India", Tuple.of(new Coordinates(880, 355), 0));
+                map.put("China", Tuple.of(new Coordinates(1021, 297), 0));
+                map.put("India", Tuple.of(new Coordinates(880, 355), -1));
                 map.put("Mongols", Tuple.of(new Coordinates(981, 168), -1));
                 map.put("Sweden", Tuple.of(new Coordinates(663, 159), 1));
                 map.put("England", Tuple.of(new Coordinates(601, 196), 0));
                 map.put("Huron", Tuple.of(new Coordinates(315, 221), -1));
                 map.put("Aztec Empire", Tuple.of(new Coordinates(253, 337), -1));
+                map.put("Ethiopia", Tuple.of(new Coordinates(742, 377), 0));
+                map.put("Majapahit", Tuple.of(new Coordinates(998, 442), -1));
+                map.put("Spain", Tuple.of(new Coordinates(590, 250), 0));
+                map.put("Poland", Tuple.of(new Coordinates(674, 200), 0));
+                map.put("France", Tuple.of(new Coordinates(612, 213), 0));
+                map.put("Russia", Tuple.of(new Coordinates(730, 175), 0));
+                map.put("Germany", Tuple.of(new Coordinates(640, 194), 0));
+                map.put("Korea", Tuple.of(new Coordinates(1057, 267), 0));
+                map.put("Japan", Tuple.of(new Coordinates(1097, 265), 0));
                 break;
             case SMALL_MODE:
                 map.put("Roman Empire", Tuple.of(new Coordinates(161, 58), 0));

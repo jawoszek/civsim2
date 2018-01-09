@@ -18,20 +18,54 @@ public class Relations implements Rule {
                                 return;
                             }
                             int valueToAdd = pair.stream().mapToInt(civilization -> getBasicRelationGrowth(civilization) - civilization.getProvincesRatio()).sum();
-                            currentRelation += Math.max(0,Math.min(6000, currentRelation + valueToAdd));
+                            valueToAdd = normalizeValueToAdd(valueToAdd);
+                            currentRelation = Math.max(0,Math.min(6000, currentRelation + valueToAdd));
                             simulationState.getRelations().put(pair, currentRelation);
                         }
                 );
     }
 
     @Override
-    public void deleteCivilization(Civilization civilization) {
+    public void deleteCivilization(SimulationState simulationState, Civilization civilization) {
 
+    }
+
+    private int normalizeValueToAdd(int valueToAdd) {
+        if (valueToAdd > 100) {
+            return 5;
+        }
+
+        if (valueToAdd > 0) {
+            return 2;
+        }
+
+        if (valueToAdd < -100) {
+            return -5;
+        }
+
+        if (valueToAdd < 0) {
+            return -2;
+        }
+
+        return 0;
     }
 
     private int getBasicRelationGrowth(Civilization civilization) {
         int technologyLevel = civilization.getTechnologyLevel();
+        int technologyBonus = 0;
 
-        return 100;
+        if (technologyLevel > 600) {
+            technologyBonus += 50;
+        }
+
+        if (technologyLevel > 1400) {
+            technologyBonus += 50;
+        }
+
+        if (technologyLevel > 1800) {
+            technologyBonus += 50;
+        }
+
+        return 50 + technologyBonus;
     }
 }

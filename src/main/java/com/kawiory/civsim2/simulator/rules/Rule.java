@@ -10,5 +10,5 @@ public interface Rule {
 
     void changeState(SimulationState simulationState);
 
-    void deleteCivilization(Civilization civilization);
+    void deleteCivilization(SimulationState simulationState, Civilization civilization);
 }
